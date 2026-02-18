@@ -1,0 +1,38 @@
+
+body {
+  font-family: system-ui;
+  background: #f1f5f9;
+  margin: 0;
+}
+
+header {
+  background: #0f172a;
+  color: white;
+  padding: 12px;
+}
+
+main {
+  padding: 16px;
+}
+
+.card {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  max-width: 300px;
+}
+
+.grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
+.ch-card {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
