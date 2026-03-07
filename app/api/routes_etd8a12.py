@@ -11,7 +11,7 @@ router = APIRouter(prefix="/etd8a12", tags=["etd8a12"])
 # =========================
 # Konfigurasi ETD / Modbus
 # =========================
-ETD_HOST = "10.21.240.2"
+ETD_HOST = "10.21.240.5"
 ETD_PORT = 5000
 ETD_UNIT = 1
 
@@ -60,7 +60,7 @@ async def get_all_outputs(
         return [bool(v) for v in regs]
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_5000_BAD_GATEWAY,
+            status_code=status.HTTP_502_BAD_GATEWAY,
             detail=str(e),
         )
 
@@ -83,7 +83,7 @@ async def get_output(
         return bool(regs[0])
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_5000_BAD_GATEWAY,
+            status_code=status.HTTP_502_BAD_GATEWAY,
             detail=str(e),
         )
 
@@ -107,7 +107,7 @@ async def set_output(
         }
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_5000_BAD_GATEWAY,
+            status_code=status.HTTP_502_BAD_GATEWAY,
             detail=str(e),
         )
 
@@ -127,9 +127,10 @@ async def read_range(
             address=req.start - 1,
             count=req.count
         )
-        return [bool(v) for v in regs]
+        return [v == ETD_OUTPUT_ON for v in regs]
+
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_5000_BAD_GATEWAY,
+            status_code=status.HTTP_502_BAD_GATEWAY,
             detail=str(e),
         )
