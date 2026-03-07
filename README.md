@@ -3,7 +3,7 @@
 Fitur:
 - ✅ FastAPI + JWT Auth
 - ✅ SQLModel + SQLite
-- ✅ Modbus TCP (pymodbus, async) untuk ETD 8A12 @ 10.21.240.2:502
+- ✅ Modbus TCP (pymodbus, async) untuk ETD 8A12 @ 10.21.240.5:5000
 - ✅ Endpoint khusus ETD: baca 12 kanal, set ON/OFF (0x0100/0x0200)
 - ✅ Halaman kontrol Jinja2 `/etd8a12`
 - ✅ Background polling
