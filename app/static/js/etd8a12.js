@@ -1,92 +1,139 @@
 
+// app/static/js/etd8a12.js
+
+const API_PREFIX = '/etd8a12';
 const channelNames = {};
 
-fetch('/etd8a12/channels')
-  .then(r => r.json())
-  .then(arr => {
-    arr.forEach(ch => channelNames[ch.index] = ch.name);
-  });
 const grid = document.getElementById('grid');
 const btnLoad = document.getElementById('btnLoad');
 
-function authHeader() {
+function authHeaders() {
   const token = localStorage.getItem('access_token');
-  return token
-    ? { 'Authorization': 'Bearer ' + token }
-    : {};
+  return token ? { 'Authorization': 'Bearer ' + token } : {};
+}
+
+async function fetchJSON(url, options = {}) {
+  const res = await fetch(url, options);
+  if (res.status === 401) {
+    // token invalid/expired → kembali ke login
+    window.location.href = '/login';
+    return;
+  }
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+  return res.json();
 }
 
 async function loadChannelNames() {
-  const res = await fetch('/etd8a12/channels');
-  if (!res.ok) throw await res.text();
-
-  const arr = await res.json();
-  arr.forEach(ch => {
-    channelNames[ch.index] = ch.name;
-  });
+  try {
+    const arr = await fetchJSON(`${API_PREFIX}/channels`, {
+      headers: { ...authHeaders() }
+    });
+    (arr || []).forEach(ch => {
+      // ch = { index, name }
+      channelNames[ch.index] = ch.name;
+    });
+  } catch (e) {
+    console.warn('Gagal load channel names:', e.message || e);
+    // tidak fatal; boleh lanjut tanpa nama
+  }
 }
+
 async function loadStatus() {
   grid.innerHTML = '';
 
   try {
-    const res = await fetch('/etd8a12/outputs', {
-      headers: authHeader()
+    const arr = await fetchJSON(`${API_PREFIX}/outputs`, {
+      headers: { ...authHeaders() }
     });
-
-    if (!res.ok) throw await res.text();
-
-    const arr = await res.json();
-    
+    if (!Array.isArray(arr)) throw new Error('Format outputs tidak sesuai');
 
     arr.forEach((on, idx) => {
       const n = idx + 1;
 
       const card = document.createElement('div');
       card.className = 'ch-card';
+      card.style.border = '1px solid #ccc';
+      card.style.padding = '12px';
+      card.style.margin = '6px';
+      card.style.borderRadius = '8px';
+      card.style.minWidth = '140px';
+      card.style.display = 'inline-block';
 
       const lbl = document.createElement('div');
-      :windowlbl.textContent = channelNames[n] ?? ('CH ' + n);
+      lbl.textContent = channelNames[n] ?? ('CH ' + n);
+      lbl.style.fontWeight = '600';
+      lbl.style.marginBottom = '6px';
+
+      const wrap = document.createElement('label');
+      wrap.style.display = 'flex';
+      wrap.style.alignItems = 'center';
+      wrap.style.gap = '8px';
+      wrap.style.cursor = 'pointer';
 
       const sw = document.createElement('input');
       sw.type = 'checkbox';
       sw.checked = !!on;
 
+      const stateText = document.createElement('span');
+      stateText.textContent = on ? 'ON' : 'OFF';
+      stateText.style.color = on ? 'green' : 'red';
+
       sw.addEventListener('change', async () => {
+        const original = !sw.checked; // nilai sebelumnya
         sw.disabled = true;
+        stateText.textContent = sw.checked ? 'ON' : 'OFF';
+        stateText.style.color = sw.checked ? 'green' : 'red';
+
         try {
-          const res2 = await fetch('/etd8a12/outputs/set', {
+          await fetchJSON(`${API_PREFIX}/outputs/set`, {
             method: 'POST',
-            headers: {
-              ...authHeader(),
+            headers: { 
+              ...authHeaders(),
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({ channel: n, on: sw.checked })
           });
-
-          if (!res2.ok) throw await res2.text();
+          // (opsional) muat ulang status untuk sinkronisasi penuh:
+          // await loadStatus();
         } catch (e) {
-          alert('Gagal set CH ' + n);
-          sw.checked = !sw.checked;
+          alert(`Gagal set CH ${n}: ${e.message || e}`);
+          // revert UI
+          sw.checked = original;
+          stateText.textContent = original ? 'ON' : 'OFF';
+          stateText.style.color = original ? 'green' : 'red';
         } finally {
           sw.disabled = false;
         }
       });
 
+      wrap.appendChild(sw);
+      wrap.appendChild(stateText);
+
       card.appendChild(lbl);
-      card.appendChild(sw);
+      card.appendChild(wrap);
       grid.appendChild(card);
     });
 
   } catch (e) {
-    alert('Gagal load status: ' + e);
+    console.error(e);
+    alert('Gagal load status: ' + (e.message || e));
   }
 }
 
-// tombol refresh
 btnLoad.addEventListener('click', loadStatus);
 
-// 🔥 AUTO LOAD SAAT HALAMAN DIBUKA
 window.addEventListener('load', async () => {
+  // pastikan elemen ada
+  if (!grid || !btnLoad) {
+    console.error('Elemen grid atau btnLoad tidak ditemukan di DOM');
+    return;
+  }
   await loadChannelNames();
   await loadStatus();
+
+  // (opsional) auto refresh berkala:
+  // setInterval(loadStatus, 5000);
 });
