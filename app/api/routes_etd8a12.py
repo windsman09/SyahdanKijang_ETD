@@ -127,7 +127,8 @@ async def read_range(
             address=req.start - 1,
             count=req.count
         )
-        return [bool(v) for v in regs]
+        return [v == ETD_OUTPUT_ON for v in regs]
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,

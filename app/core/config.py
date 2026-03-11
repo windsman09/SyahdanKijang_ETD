@@ -25,7 +25,7 @@ class Settings(BaseModel):
     polling_interval: int = int(os.getenv("POLLING_INTERVAL", "5"))
 
     # ETD target (dibaca dari .env)
-    etd_host: str = os.getenv("ETD_HOST", "10.21.240.2")
+    etd_host: str = os.getenv("ETD_HOST", "10.21.240.5")
     etd_port: int = int(os.getenv("ETD_PORT", "5000"))
     etd_unit: int = int(os.getenv("ETD_UNIT", "1"))
 

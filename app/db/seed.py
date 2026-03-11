@@ -3,6 +3,10 @@ import logging
 from sqlmodel import Session, select
 from app.db.models import User, Channel
 from app.core.security import get_password_hash
+<<<<<<< HEAD
+=======
+from app.db.models import Channel
+>>>>>>> 3b7d1d5b9b7584757ceebdec74023182ad093cab
 
 logger = logging.getLogger("app.seed")
 
@@ -31,6 +35,7 @@ def ensure_admin(session: Session):
         logger.info("[seed] admin created")
     else:
         logger.info("[seed] admin already exists")
+<<<<<<< HEAD
 
 
 def ensure_channels(session: Session):
@@ -74,3 +79,6 @@ def run_seed(session: Session):
     ensure_channels(session)
 
     logger.info("[seed] seeding finished")
+=======
+Channel=["Lampu K1B","K1B AC1","K1B AC2", "Lampu K1C","K1C AC1", "K1C AC2","Lampu K1D","K1D AC1","K1D AC2","Lampu K1E","K1E AC1","K1E AC2" ]
+>>>>>>> 3b7d1d5b9b7584757ceebdec74023182ad093cab

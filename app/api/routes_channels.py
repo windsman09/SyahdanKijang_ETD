@@ -10,7 +10,7 @@ router = APIRouter(prefix="/channels", tags=["channels"])
 
 
 @router.get("/")
-def get_channels(
+def get_channel(
     session: Session = Depends(get_session),
     user=Depends(get_current_user),
 ):
