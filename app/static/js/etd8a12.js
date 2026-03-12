@@ -1,20 +1,14 @@
-<<<<<<< HEAD
-
 // app/static/js/etd8a12.js
 
 const API_PREFIX = '/etd8a12';
 const channelNames = {};
 
-=======
-const channelNames = {};
->>>>>>> 3b7d1d5b9b7584757ceebdec74023182ad093cab
 const grid = document.getElementById('grid');
 const btnLoad = document.getElementById('btnLoad');
 
 function authHeaders() {
   const token = localStorage.getItem('access_token');
   return token ? { 'Authorization': 'Bearer ' + token } : {};
-<<<<<<< HEAD
 }
 
 async function fetchJSON(url, options = {}) {
@@ -33,9 +27,11 @@ async function fetchJSON(url, options = {}) {
 
 async function loadChannelNames() {
   try {
+    console.log('[etd8a12] GET', `${API_PREFIX}/channels`);
     const arr = await fetchJSON(`${API_PREFIX}/channels`, {
       headers: { ...authHeaders() }
     });
+
     (arr || []).forEach(ch => {
       // ch = { index, name }
       channelNames[ch.index] = ch.name;
@@ -44,36 +40,18 @@ async function loadChannelNames() {
     console.warn('Gagal load channel names:', e.message || e);
     // tidak fatal; boleh lanjut tanpa nama
   }
-=======
-}
-
-async function loadChannelNames() {
-  const res = await fetch('/etd8a12/channels');
-
-  if (!res.ok) throw await res.text();
-
-  const arr = await res.json();
-  arr.forEach(ch => {
-    channelNames[ch.index] = ch.name;
-  });
->>>>>>> 3b7d1d5b9b7584757ceebdec74023182ad093cab
 }
 
 async function loadStatus() {
   grid.innerHTML = '';
 
   try {
+    console.log('[etd8a12] GET', `${API_PREFIX}/outputs`);
     const arr = await fetchJSON(`${API_PREFIX}/outputs`, {
       headers: { ...authHeaders() }
     });
-<<<<<<< HEAD
+
     if (!Array.isArray(arr)) throw new Error('Format outputs tidak sesuai');
-=======
-
-    if (!res.ok) throw await res.text();
-
-    const arr = await res.json();
->>>>>>> 3b7d1d5b9b7584757ceebdec74023182ad093cab
 
     arr.forEach((on, idx) => {
       const n = idx + 1;
@@ -89,7 +67,6 @@ async function loadStatus() {
 
       const lbl = document.createElement('div');
       lbl.textContent = channelNames[n] ?? ('CH ' + n);
-<<<<<<< HEAD
       lbl.style.fontWeight = '600';
       lbl.style.marginBottom = '6px';
 
@@ -98,14 +75,11 @@ async function loadStatus() {
       wrap.style.alignItems = 'center';
       wrap.style.gap = '8px';
       wrap.style.cursor = 'pointer';
-=======
->>>>>>> 3b7d1d5b9b7584757ceebdec74023182ad093cab
 
       const sw = document.createElement('input');
       sw.type = 'checkbox';
       sw.checked = !!on;
 
-<<<<<<< HEAD
       const stateText = document.createElement('span');
       stateText.textContent = on ? 'ON' : 'OFF';
       stateText.style.color = on ? 'green' : 'red';
@@ -119,7 +93,7 @@ async function loadStatus() {
         try {
           await fetchJSON(`${API_PREFIX}/outputs/set`, {
             method: 'POST',
-            headers: { 
+            headers: {
               ...authHeaders(),
               'Content-Type': 'application/json'
             },
@@ -141,8 +115,6 @@ async function loadStatus() {
       wrap.appendChild(sw);
       wrap.appendChild(stateText);
 
-=======
->>>>>>> 3b7d1d5b9b7584757ceebdec74023182ad093cab
       card.appendChild(lbl);
       card.appendChild(wrap);
       grid.appendChild(card);

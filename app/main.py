@@ -17,6 +17,7 @@ from app.api.routes_view import router as view_router
 from app.api.routes_etd8a12_view import router_etd_view as etd_view_router
 from app.api.routes_etd8a12 import router as etd_router
 from app.api.routes_channels import router as channels_router
+from app.db.models import Channel,User
 
 
 from app.services.tasks import polling_loop
