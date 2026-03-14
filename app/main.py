@@ -3,10 +3,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
-
+from app.api.routes_multi_etd import router as multi_etd_router
 from app.core.config import settings
 from app.core.logging import setup_logging
-
+from app.db.models import User, Device, Channel
 from app.db.session import init_db, get_session
 from app.db.seed import run_seed
 
@@ -56,6 +56,7 @@ app.include_router(view_router)
 app.include_router(etd_view_router)
 
 app.include_router(auth_router)
+app.include_router(multi_etd_router)
 
 app.include_router(items_router)
 app.include_router(devices_router)

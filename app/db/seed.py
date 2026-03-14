@@ -1,74 +1,64 @@
-
-import os
+# app/db/seed.py
 import logging
 from sqlmodel import Session, select
-from app.db.models import User, Channel
+from app.db.models import User, Device, Channel
 from app.core.security import get_password_hash
 
 logger = logging.getLogger("app.seed")
 
 def ensure_admin(session: Session):
-    username = os.getenv("ADMIN_USERNAME", "admin")
-    password = os.getenv("ADMIN_PASSWORD", "admin123")
-
-    logger.info(
-        f"[seed] ensuring admin '{username}' (len(chars)={len(password)}, len(bytes)={len(password.encode('utf-8'))})"
-    )
-
-    user = session.exec(
-        select(User).where(User.username == username)
-    ).first()
-
+    username = "admin"
+    password = "admin123"
+    user = session.exec(select(User).where(User.username == username)).first()
     if not user:
-        admin = User(
+        session.add(User(
             username=username,
             full_name="Administrator",
             hashed_password=get_password_hash(password),
             is_active=True,
-        )
-        session.add(admin)
+        ))
         session.commit()
         logger.info("[seed] admin created")
     else:
         logger.info("[seed] admin already exists")
 
-def ensure_channels(session: Session):
-    channels = [
-        (1, "Lampu K1B"),
-        (2, "K1B AC1"),
-        (3, "K1B AC2"),
-        (4, "Lampu K1C"),
-        (5, "K1C AC1"),
-        (6, "K1C AC2"),
-        (7, "Lampu K1D"),
-        (8, "K1D AC1"),
-        (9, "K1D AC2"),
-        (10, "Lampu K1E"),
-        (11, "K1E AC1"),
-        (12, "K1E AC2"),
+def ensure_devices(session: Session):
+    # daftar kandidat device dari hasil scanmu (port 5000 open)
+    specs = [
+        ("ETD-240-2", "10.21.240.2"),
+        ("ETD-240-3", "10.21.240.3"),
+        ("ETD-240-4", "10.21.240.4"),
+        ("ETD-240-5", "10.21.240.5"),
+        ("ETD-240-7", "10.21.240.7"),
     ]
-
-    for ch_num, name in channels:
-        existing = session.exec(
-            select(Channel).where(Channel.channel == ch_num)
-        ).first()
-
-        if not existing:
-            channel = Channel(
-                channel=ch_num,
-                name=name
+    for name, ip in specs:
+        dev = session.exec(select(Device).where(Device.name == name)).first()
+        if not dev:
+            dev = Device(
+                name=name, ip=ip, port=5000, unit=1,
+                io_type="coil", channels=12, timeout=5.0, retries=3,
+                enabled=True
             )
-            session.add(channel)
-            logger.info(f"[seed] channel created: {name}")
-        else:
-            logger.info(f"[seed] channel exists: {name}")
+            session.add(dev)
+            logger.info(f"[seed] device created: {name} {ip}:5000")
+    session.commit()
 
+def ensure_device_channels(session: Session):
+    devices = session.exec(select(Device).where(Device.enabled == True)).all()
+    for d in devices:
+        # contoh label default; bisa disesuaikan per device kalau perlu
+        existing = {c.channel for c in session.exec(
+            select(Channel).where(Channel.device_id == d.id)
+        ).all()}
+        for ch in range(1, d.channels + 1):
+            if ch not in existing:
+                session.add(Channel(device_id=d.id, channel=ch, name=f"{d.name} CH {ch}"))
+        logger.info(f"[seed] channels ensured for {d.name}")
     session.commit()
 
 def run_seed(session: Session):
     logger.info("[seed] start seeding data")
-
     ensure_admin(session)
-    ensure_channels(session)
-
+    ensure_devices(session)
+    ensure_device_channels(session)  # penting: per device
     logger.info("[seed] seeding finished")
