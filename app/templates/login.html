@@ -1,15 +1,83 @@
-
 {% extends "base.html" %}
+
 {% block content %}
-<section class="card">
-  <h2>Login</h2>
+<div class="login-wrapper">
+  <section class="card">
+    <h2>Login</h2>
 
-  <input id="username" placeholder="Username">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
+    <div class="form-group">
+      <input id="username" placeholder="Username">
+    </div>
 
-  <p id="msg"></p>
-</section>
+    <div class="form-group">
+      <input id="password" type="password" placeholder="Password">
+    </div>
+
+    <button onclick="login()">Login</button>
+
+    <p id="msg"></p>
+  </section>
+</div>
 
 <script src="/static/js/auth.js"></script>
+
+<style>
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
+
+.card {
+  width: 320px;
+  padding: 25px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.card h2 {
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.2s;
+}
+
+input:focus {
+  border-color: #4CAF50;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #4CAF50;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #45a049;
+}
+
+#msg {
+  margin-top: 10px;
+  color: red;
+}
+</style>
 {% endblock %}

@@ -27,7 +27,7 @@ ETD_OUTPUT_OFF = 0x0200
 _modbus_service = ModbusService(
     host=ETD_HOST,
     port=ETD_PORT,
-    unit_id=ETD_UNIT,
+    slave_id=ETD_UNIT,
     timeout=5.0,   # perpanjang sedikit untuk jaringan industri
     retries=3,
 )

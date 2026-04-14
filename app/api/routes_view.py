@@ -13,7 +13,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request,"login.html")
 
 
 @router.get("/etd8a12", response_class=HTMLResponse)
@@ -23,9 +23,9 @@ def etd_page(request: Request, session: Session = Depends(get_session)):
     ).all()
 
     return templates.TemplateResponse(
+            request,
         "etd8a12.html",
         {
-            "request": request,
             "channels": channels
         }
     )

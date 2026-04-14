@@ -15,7 +15,7 @@ async def polling_loop(interval_sec: int = 5):
     svc = ModbusService(
         host=settings.etd_host,
         port=settings.etd_port,   # ✅ 5000
-        unit_id=settings.etd_unit,
+        slave_id=settings.etd_slave,
         timeout=2.0,
         retries=2,
     )

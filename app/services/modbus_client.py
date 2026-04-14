@@ -13,13 +13,13 @@ class ModbusService:
         self,
         host: str,
         port: int = 502,
-        unit_id: int = 1,
+        slave_id: int = 1,
         timeout: float = 8.0,
         retries: int = 3,
     ):
         self.host = host
         self.port = port
-        self.unit_id = unit_id
+        self.slave_id = slave_id
         self.timeout = timeout
         self.retries = retries
         self.client: Optional[AsyncModbusTcpClient] = None
@@ -88,7 +88,7 @@ class ModbusService:
             lambda: self.client.read_holding_registers(
                 address,
                 count,
-                unit=self.unit_id
+                slave=self.slave_id
             )
         )
 
@@ -102,7 +102,7 @@ class ModbusService:
             lambda: self.client.write_register(
                 address,
                 value,
-                unit=self.unit_id
+                slave=self.slave_id
             )
         )
 
