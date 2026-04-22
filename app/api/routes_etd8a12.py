@@ -5,7 +5,7 @@ from typing import List
 from app.core.security import get_current_user
 from app.services.modbus_client import ModbusService
 
-router = APIRouter(prefix="/etd8a12", tags=["etd8a12"])
+router = APIRouter(prefix="/api/etd", tags=["etd"])
 
 # =========================
 # Konfigurasi ETD / Modbus

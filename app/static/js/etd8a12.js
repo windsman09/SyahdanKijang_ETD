@@ -1,6 +1,6 @@
 // app/static/js/etd8a12.js
 
-const API_PREFIX = '/etd8a12';
+const API_PREFIX = '/api/etd';
 const channelNames = {};
 
 const grid = document.getElementById('grid');

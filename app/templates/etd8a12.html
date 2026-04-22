@@ -1,14 +1,33 @@
-
 {% extends "base.html" %}
+
 {% block content %}
+<h2>{{ device.name if device else "Device tidak ditemukan" }}</h2>
 
-<section>
-  <h2>ETD 8A12</h2>
-  <p>IP: 10.21.240.3 | Unit: 1</p>
+{% if not device %}
+<p style="color:red;">Device tidak ditemukan.</p>
 
-  <button id="btnLoad">Refresh</button>
-  <div id="grid" class="grid"></div>
-</section>
+{% elif channels %}
+<table border="1" id="channel-table">
+    <tr>
+        <th>Channel</th>
+        <th>Nama</th>
+    </tr>
+    {% for ch in channels %}
+    <tr>
+        <td>{{ ch.channel }}</td>
+        <td>{{ ch.name }}</td>
+    </tr>
+    {% endfor %}
+</table>
 
-<script src="/static/js/etd8a12.js"></script>
+<button id="btnLoad">Reload Status</button>
+<div id="grid"></div>
+
+{% else %}
+<p>Tidak ada channel.</p>
+{% endif %}
+{% endblock %}
+
+{% block script_extra %}
+<script src="{{ url_for('static', path='js/etd8a12.js') }}"></script>
 {% endblock %}

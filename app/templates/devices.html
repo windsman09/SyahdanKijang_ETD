@@ -1,0 +1,29 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Daftar Device</h2>
+
+{% if devices %}
+<table border="1" cellpadding="6">
+    <tr>
+        <th>ID</th>
+        <th>Nama</th>
+        <th>IP</th>
+        <th>Aksi</th>
+    </tr>
+    {% for d in devices %}
+    <tr>
+        <td>{{ d.id }}</td>
+        <td>{{ d.name }}</td>
+        <td>{{ d.ip }}:{{ d.port }}</td>
+        <td>
+            <a href="/etd/{{ d.name }}">Buka</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>Tidak ada device.</p>
+{% endif %}
+{% endblock %}
