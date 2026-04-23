@@ -25,11 +25,11 @@ def ensure_admin(session: Session):
 def ensure_devices(session: Session):
     # daftar kandidat device dari hasil scanmu (port 5000 open)
     specs = [
-        ("ETD-240-2", "10.21.240.2"),
-        ("ETD-240-3", "10.21.240.3"),
-        ("ETD-240-4", "10.21.240.4"),
-        ("ETD-240-5", "10.21.240.5"),
-        ("ETD-240-7", "10.21.240.7"),
+        ("Module-1", "10.21.240.2"),
+        ("Module-2", "10.21.240.3"),
+        ("Module-3", "10.21.240.4"),
+        ("Module-4", "10.21.240.5"),
+        ("Module-5", "10.21.240.7"),
     ]
     for name, ip in specs:
         dev = session.exec(select(Device).where(Device.name == name)).first()

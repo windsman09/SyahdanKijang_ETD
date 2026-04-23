@@ -12,7 +12,7 @@ class ModbusService:
     def __init__(
         self,
         host: str,
-        port: int = 502,
+        port: int = 5000,
         slave_id: int = 1,
         timeout: float = 8.0,
         retries: int = 3,
@@ -83,13 +83,9 @@ class ModbusService:
 
         raise last_exc
 
-    async def read_holding_registers(self, address: int, count: int = 1) -> List[int]:
+    async def read_holding_registers(self, address: int) -> List[int]:
         rr = await self._with_retry(
-            lambda: self.client.read_holding_registers(
-                address,
-                count,
-                slave=self.slave_id
-            )
+            lambda: self.client.read_holding_registers(address)
         )
 
         return list(rr.registers)
@@ -101,8 +97,7 @@ class ModbusService:
         await self._with_retry(
             lambda: self.client.write_register(
                 address,
-                value,
-                slave=self.slave_id
+                value
             )
         )
 

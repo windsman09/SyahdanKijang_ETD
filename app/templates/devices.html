@@ -1,24 +1,26 @@
-
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Daftar Device</h2>
+<h2>Daftar Module</h2>
 
 {% if devices %}
-<table border="1" cellpadding="6">
+<table class-"device-table" border="2" cellpadding="7">
+  <thead>
     <tr>
         <th>ID</th>
         <th>Nama</th>
         <th>IP</th>
         <th>Aksi</th>
     </tr>
+    </thead>
+    <tbody>
     {% for d in devices %}
     <tr>
         <td>{{ d.id }}</td>
         <td>{{ d.name }}</td>
         <td>{{ d.ip }}:{{ d.port }}</td>
         <td>
-            <a href="/etd/{{ d.name }}">Buka</a>
+          <a class="btn-open" href="/etd/{{ d.name }}">Open</a>
         </td>
     </tr>
     {% endfor %}

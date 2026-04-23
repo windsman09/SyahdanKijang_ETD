@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from typing import List
+from starlette import status
+from app.db.session import get_session
+from app.db.models import Device
 
 from app.core.security import get_current_user
 from app.services.modbus_client import ModbusService
@@ -10,7 +13,20 @@ router = APIRouter(prefix="/api/etd", tags=["etd"])
 # =========================
 # Konfigurasi ETD / Modbus
 # =========================
-ETD_HOST = "10.21.240.2"   # pastikan IP benar
+
+
+
+def get_device(device_id: int):
+    with next(get_session()) as session:
+        device = session.get(Device, device_id)
+        if not device:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Device tidak ditemukan"
+            )
+        return device
+
+ETD_HOST = "10.21.240.7"   # pastikan IP benar
 ETD_PORT = 5000            # pastikan port benar (banyak device Modbus TCP defaultnya 502)
 ETD_UNIT = 1
 
@@ -59,27 +75,28 @@ async def get_channels(user=Depends(get_current_user)):
 
 # =========================
 # Outputs (status & control)
-# =========================
-@router.get("/outputs", response_model=List[bool])
-async def get_all_outputs(user=Depends(get_current_user)) -> List[bool]:
-    try:
-        # --- PILIH SALAH SATU SESUAI PERANGKAT ---
+#from fastapi import HTTPException, Depends
+from starlette import status
+from typing import List
 
-        # 1) Jika status output disimpan di HOLDING REGISTER:
-        regs = await svc().read_holding_registers(address=0, count=ETD_CHANNELS)
-        # Mapping ke bool: sesuaikan (0/1 atau 0x0100/0x0200). Contoh generik:
-        states = [(v in (1, ETD_OUTPUT_ON, True)) for v in regs]
+@router.get("/devices/{decie_id}/outputs", response_model=List[bool])
+async def get_outputs(
+    device_id: int,
+    user=Depends(get_current_user)):
+    try:
+        states: List[bool] = []
+
+        for addr in range(ETD_CHANNELS):
+            regs = await svc().read_holding_registers(addr)
+            v = regs[0]
+            states.append(v in (1, ETD_OUTPUT_ON, True))
+
         return states
 
-        # 2) Jika ternyata status output ada di COIL:
-        # coils = await svc().read_coils(address=0, count=ETD_CHANNELS)
-        # return [bool(v) for v in coils]
-
     except Exception as e:
-        # Tambahkan detail supaya terlihat di UI/log
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"modbus read failed host={ETD_HOST} port={ETD_PORT} unit={ETD_UNIT}: {e!s}",
+            detail=f"modbus read failed: {e}"
         )
 
 @router.get("/outputs/{channel}", response_model=bool)

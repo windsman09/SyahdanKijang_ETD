@@ -57,7 +57,7 @@ async def device_page(
         raise not_found(f"Device {device_id} tidak ditemukan")
 
     return templates.TemplateResponse(
-        "etd8a12.html",
+        "devices.html",
         {
             "request": request,
             "device": device,
