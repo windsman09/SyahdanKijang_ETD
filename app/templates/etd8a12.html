@@ -29,5 +29,9 @@
 {% endblock %}
 
 {% block script_extra %}
-<script src="{{ url_for('static', path='js/etd8a12.js') }}"></script>
+<script>
+  const deviceId = {{ device.id }};
+  </script>
+<script src="/static/js/etd8a12.js?v=20260424"></script>
+
 {% endblock %}

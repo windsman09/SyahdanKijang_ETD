@@ -1,61 +1,93 @@
 // app/static/js/etd8a12.js
+// ==========================================
+// Prasyarat:
+// - Di HTML (device.html / etd8a12.html) HARUS ada:
+//   <script>const deviceId = {{ device.id }};</script>
+// ==========================================
 
 const API_PREFIX = '/api/etd';
 const channelNames = {};
 
+// Elemen DOM
 const grid = document.getElementById('grid');
 const btnLoad = document.getElementById('btnLoad');
 
+
+// =========================
+// Helper Auth Header
+// =========================
 function authHeaders() {
   const token = localStorage.getItem('access_token');
   return token ? { 'Authorization': 'Bearer ' + token } : {};
 }
 
+
+// =========================
+// Helper Fetch JSON
+// =========================
 async function fetchJSON(url, options = {}) {
   const res = await fetch(url, options);
+
   if (res.status === 401) {
-    // token invalid/expired → kembali ke login
+    // Token invalid / expired
     window.location.href = '/login';
     return;
   }
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `HTTP ${res.status}`);
   }
+
   return res.json();
 }
 
+
+// =========================
+// Load Channel Names (Global)
+// =========================
 async function loadChannelNames() {
   try {
-    console.log('[etd8a12] GET', `${API_PREFIX}/channels`);
-    const arr = await fetchJSON(`${API_PREFIX}/channels`, {
+    const url = `${API_PREFIX}/channels`;
+    console.log('[etd8a12] GET', url);
+
+    const arr = await fetchJSON(url, {
       headers: { ...authHeaders() }
     });
 
     (arr || []).forEach(ch => {
-      // ch = { index, name }
       channelNames[ch.index] = ch.name;
     });
+
   } catch (e) {
     console.warn('Gagal load channel names:', e.message || e);
-    // tidak fatal; boleh lanjut tanpa nama
+    // Tidak fatal, UI tetap jalan
   }
 }
 
+
+// =========================
+// Load Channel Status (PER DEVICE)
+// =========================
 async function loadStatus() {
   grid.innerHTML = '';
 
   try {
-    console.log('[etd8a12] GET', `${API_PREFIX}/outputs`);
-    const arr = await fetchJSON(`${API_PREFIX}/outputs`, {
+    const url = `${API_PREFIX}/devices/${deviceId}/outputs`;
+    console.log('[etd8a12] GET', url);
+
+    const states = await fetchJSON(url, {
       headers: { ...authHeaders() }
     });
 
-    if (!Array.isArray(arr)) throw new Error('Format outputs tidak sesuai');
+    if (!Array.isArray(states)) {
+      throw new Error('Format outputs tidak sesuai');
+    }
 
-    arr.forEach((on, idx) => {
-      const n = idx + 1;
+    states.forEach((on, idx) => {
+      const channelNo = idx + 1;
 
+      // --- Card container ---
       const card = document.createElement('div');
       card.className = 'ch-card';
       card.style.border = '1px solid #ccc';
@@ -65,11 +97,13 @@ async function loadStatus() {
       card.style.minWidth = '140px';
       card.style.display = 'inline-block';
 
+      // --- Channel label ---
       const lbl = document.createElement('div');
-      lbl.textContent = channelNames[n] ?? ('CH ' + n);
+      lbl.textContent = channelNames[channelNo] ?? ('CH ' + channelNo);
       lbl.style.fontWeight = '600';
       lbl.style.marginBottom = '6px';
 
+      // --- Switch wrapper ---
       const wrap = document.createElement('label');
       wrap.style.display = 'flex';
       wrap.style.alignItems = 'center';
@@ -84,30 +118,35 @@ async function loadStatus() {
       stateText.textContent = on ? 'ON' : 'OFF';
       stateText.style.color = on ? 'green' : 'red';
 
+      // =========================
+      // Toggle Handler
+      // =========================
       sw.addEventListener('change', async () => {
-        const original = !sw.checked; // nilai sebelumnya
+        const previous = !sw.checked;
         sw.disabled = true;
-        stateText.textContent = sw.checked ? 'ON' : 'OFF';
-        stateText.style.color = sw.checked ? 'green' : 'red';
 
         try {
-          await fetchJSON(`${API_PREFIX}/outputs/set`, {
-            method: 'POST',
-            headers: {
-              ...authHeaders(),
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ channel: n, on: sw.checked })
-          });
-          // (opsional) muat ulang status untuk sinkronisasi penuh:
-          // await loadStatus();
+          await fetchJSON(
+            `${API_PREFIX}/devices/${deviceId}/outputs/set`,
+            {
+              method: 'POST',
+              headers: {
+                ...authHeaders(),
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                channel: channelNo,
+                on: sw.checked
+              })
+            }
+          );
+
         } catch (e) {
-          alert(`Gagal set CH ${n}: ${e.message || e}`);
-          // revert UI
-          sw.checked = original;
-          stateText.textContent = original ? 'ON' : 'OFF';
-          stateText.style.color = original ? 'green' : 'red';
+          alert(`Gagal set CH ${channelNo}: ${e.message || e}`);
+          sw.checked = previous;
         } finally {
+          stateText.textContent = sw.checked ? 'ON' : 'OFF';
+          stateText.style.color = sw.checked ? 'green' : 'red';
           sw.disabled = false;
         }
       });
@@ -126,17 +165,23 @@ async function loadStatus() {
   }
 }
 
-btnLoad.addEventListener('click', loadStatus);
+
+// =========================
+// Init
+// =========================
+if (btnLoad) {
+  btnLoad.addEventListener('click', loadStatus);
+}
 
 window.addEventListener('load', async () => {
-  // pastikan elemen ada
-  if (!grid || !btnLoad) {
-    console.error('Elemen grid atau btnLoad tidak ditemukan di DOM');
+  if (!grid) {
+    console.error('Elemen grid tidak ditemukan');
     return;
   }
+
   await loadChannelNames();
   await loadStatus();
 
-  // (opsional) auto refresh berkala:
+  // Optional realtime polling
   // setInterval(loadStatus, 5000);
 });
